@@ -1,12 +1,12 @@
 {
   "name": "publify",
-  "description": "cms",
+  "description": "CMS.. retake",
   "version": "1.0.0",
   "license": "MIT",
   "keywords": [
     "cms"
   ],
   "dependencies": {
-	"angular2": "~2.0.0-beta.17"
+    "express": "5.0.0-alpha.2"
   }
 }

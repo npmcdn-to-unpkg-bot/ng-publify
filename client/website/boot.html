@@ -1,5 +1,5 @@
 <head>
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,600' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,600" rel="stylesheet" type="text/css">
     <script src="https://use.fontawesome.com/9a243e8eb3.js"></script>
     
     <link id="ngp-toolbox" href="../ng-publify/style/ngp-toolbox.css" rel="stylesheet" type="text/css">
@@ -17,72 +17,9 @@
     <script src="https://npmcdn.com/@angular/platform-browser/platform-browser.umd.js"></script>
     <script src="https://npmcdn.com/@angular/platform-browser-dynamic/platform-browser-dynamic.umd.js"></script>
 
-    <script>
-        
-        function updateTools() {
-            if(document.getSelection().rangeCount) {
-                // Font color
-                document.querySelector('.tool--font-color').style.borderBottomColor = document.defaultView.getComputedStyle(document.getSelection().getRangeAt(0).commonAncestorContainer.parentNode, null).getPropertyValue('color')
-                
-                // Font bold
-                if(document.defaultView.getComputedStyle(document.getSelection().getRangeAt(0).commonAncestorContainer.parentNode, null).getPropertyValue('font-weight') === 'bold') {
-                    document.querySelector('.tool--font-bold').classList.add('active');
-                } else {
-                    document.querySelector('.tool--font-bold').classList.remove('active');
-                }
-            }
-        }
-        
-        window.addEventListener('click', updateTools);
-        window.addEventListener('keyup', updateTools);
-        
-        (function(app) {
-            var ngpToolbox = ng.core.Component({
-                selector: 'ngp-toolbox',
-                templateUrl: '/client/ng-publify/templates/toolbox.html'
-            }).Class({
-                constructor: function() {}
-            });
-            
-            var ngpEditable = ng.core.Directive({
-                selector: '[editable]',
-                host: {
-                    '(input)': 'emit($event)'
-                },
-                inputs : ['myValue'],
-                outputs : ['emitValue']
-            }).Class({
-                constructor: function() {
-                    this.emitValue = new ng.core.EventEmitter();
-                    
-                },
-                ngOnInit: function() {
-                    console.log(this);
-                },
-                emit : function($event) {
-                    console.log($event.srcElement.getAttribute('editable'), $event.srcElement.innerHTML);
-                    $event.srcElement;
-                    
-                    this.emitValue.emit('This is some value from children');
-                }
-                
-            });
-            
-            app.AppComponent = ng.core.Component({
-                selector: 'my-app',
-                templateUrl: 'templates/pagetypes/frontpage.html',
-                directives: [ngpToolbox, ngpEditable]
-            }).Class({
-                constructor: function() {
-                    
-                }
-            });
-            
-            document.addEventListener('DOMContentLoaded', function() {
-                ng.platformBrowserDynamic.bootstrap(app.AppComponent);
-            });
-        })(window.app || (window.app = {}));
-    </script>
+    <script src="scripts/components/toolbox.component.js"></script>
+    <script src="scripts/components/editable.directive.js"></script>
+    <script src="scripts/app_boot.js"></script>
     
     <!--
     <script>

@@ -1,11 +1,13 @@
 <ngp-toolbox></ngp-toolbox>
 
 <div style="padding: 15px;">
-    <p editable="title" style="font-size: 18px;">My title</p>
-    <span editable="bodytext" title="Error text goes here" style="color: red;">Default text{{1+1}}</span>
+    <p editable="title" style="font-size: 18px;">Pagetitle</p>
 
     <flexbox>
         <item container="main">
+            <span editable="error_text" title="Error text goes here" style="color: red;">
+                Initial error message here
+            </span>
             <flexbox>
                 <div *ngFor="let col of [1,2,3]" container="k6M4n8N5Q"></div>
             </flexbox>
