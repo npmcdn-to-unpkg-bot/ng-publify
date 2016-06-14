@@ -1,0 +1,18 @@
+<ngp-toolbox></ngp-toolbox>
+
+<div style="padding: 15px;">
+    <p editable="title" style="font-size: 18px;">My title</p>
+    <span editable="bodytext" title="Error text goes here" style="color: red;">Default text{{1+1}}</span>
+
+    <flexbox>
+        <item container="main">
+            <flexbox>
+                <div *ngFor="let col of [1,2,3]" container="k6M4n8N5Q"></div>
+            </flexbox>
+        </item>
+    </flexbox>
+    
+    <br><hr><br>
+    <button onclick="publify.startEdit();">Edit</button>
+    <button onclick="publify.endEdit();">Stop edit</button>
+</div>

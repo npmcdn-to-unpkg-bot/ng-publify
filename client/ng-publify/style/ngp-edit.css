@@ -1,0 +1,27 @@
+[editable] {
+    outline: none;
+}
+[editable]:not(:focus):empty:before {
+    content: '[no text]';
+    cursor: text;
+    opacity: 0.65;
+}
+[editable]:not(:focus):empty[title]:before {
+    content: '[' attr(title) ']';
+}
+body:not(.publify--is-editing) .visible-edit {
+    display: none;
+}
+body.publify--is-editing .hidden-edit {
+    display: none;
+}
+body.publify--is-editing [container]:after {
+    border: 1px dashed #aaa;
+    content: '[drop area]';
+    display: block;
+    color: #aaa;
+    font-size: 18px;
+    line-height: 32px;
+    font-weight: 300;
+    text-align: center;
+}

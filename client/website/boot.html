@@ -1,0 +1,133 @@
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,600' rel='stylesheet' type='text/css'>
+    <script src="https://use.fontawesome.com/9a243e8eb3.js"></script>
+    
+    <link id="ngp-toolbox" href="../ng-publify/style/ngp-toolbox.css" rel="stylesheet" type="text/css">
+    <link id="ngp-edit" href="../ng-publify/style/ngp-edit.css" rel="stylesheet" type="text/css">
+    
+    <link id="global" href="style/global.css" rel="stylesheet" type="text/css">
+    
+    <script src="https://npmcdn.com/core-js/client/shim.min.js"></script>
+    <script src="https://npmcdn.com/zone.js@0.6.12?main=browser"></script>
+    <script src="https://npmcdn.com/reflect-metadata@0.1.3"></script>
+    <script src="https://npmcdn.com/rxjs@5.0.0-beta.6/bundles/Rx.umd.js"></script>
+    <script src="https://npmcdn.com/@angular/core/core.umd.js"></script>
+    <script src="https://npmcdn.com/@angular/common/common.umd.js"></script>
+    <script src="https://npmcdn.com/@angular/compiler/compiler.umd.js"></script>
+    <script src="https://npmcdn.com/@angular/platform-browser/platform-browser.umd.js"></script>
+    <script src="https://npmcdn.com/@angular/platform-browser-dynamic/platform-browser-dynamic.umd.js"></script>
+
+    <script>
+        
+        function updateTools() {
+            if(document.getSelection().rangeCount) {
+                // Font color
+                document.querySelector('.tool--font-color').style.borderBottomColor = document.defaultView.getComputedStyle(document.getSelection().getRangeAt(0).commonAncestorContainer.parentNode, null).getPropertyValue('color')
+                
+                // Font bold
+                if(document.defaultView.getComputedStyle(document.getSelection().getRangeAt(0).commonAncestorContainer.parentNode, null).getPropertyValue('font-weight') === 'bold') {
+                    document.querySelector('.tool--font-bold').classList.add('active');
+                } else {
+                    document.querySelector('.tool--font-bold').classList.remove('active');
+                }
+            }
+        }
+        
+        window.addEventListener('click', updateTools);
+        window.addEventListener('keyup', updateTools);
+        
+        (function(app) {
+            var ngpToolbox = ng.core.Component({
+                selector: 'ngp-toolbox',
+                templateUrl: '/client/ng-publify/templates/toolbox.html'
+            }).Class({
+                constructor: function() {}
+            });
+            
+            var ngpEditable = ng.core.Directive({
+                selector: '[editable]',
+                host: {
+                    '(input)': 'emit($event)'
+                },
+                inputs : ['myValue'],
+                outputs : ['emitValue']
+            }).Class({
+                constructor: function() {
+                    this.emitValue = new ng.core.EventEmitter();
+                    
+                },
+                ngOnInit: function() {
+                    console.log(this);
+                },
+                emit : function($event) {
+                    console.log($event.srcElement.getAttribute('editable'), $event.srcElement.innerHTML);
+                    $event.srcElement;
+                    
+                    this.emitValue.emit('This is some value from children');
+                }
+                
+            });
+            
+            app.AppComponent = ng.core.Component({
+                selector: 'my-app',
+                templateUrl: 'templates/pagetypes/frontpage.html',
+                directives: [ngpToolbox, ngpEditable]
+            }).Class({
+                constructor: function() {
+                    
+                }
+            });
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                ng.platformBrowserDynamic.bootstrap(app.AppComponent);
+            });
+        })(window.app || (window.app = {}));
+    </script>
+    
+    <!--
+    <script>
+        (function(ngp) {
+            
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                ng.platformBrowserDynamic.bootstrap(ngp.AppComponent);
+            });
+        })(window.ngp || (window.ngp = {}));
+    </script>
+    -->
+    
+</head>
+<body>
+    <my-app></my-app>
+    
+    <script>
+        var publify = {};
+        document.addEventListener('DOMContentLoaded', function() {
+            publify.activeElement = null;
+
+            publify.startEdit = function() {
+                document.body.classList.add('publify--is-editing');
+                Array.prototype.forEach.call(document.querySelectorAll('[editable]'), function(el) {
+                    el.contentEditable = true;
+                    el.addEventListener('focus', function(e) {
+                       publify.activeElement = e.target;
+                    });
+                    el.addEventListener('blur', function(e) {
+                        e.preventDefault();
+                    });
+                });
+
+                document.body.classList.add('publify-editing');
+            };
+            publify.endEdit = function() {
+                document.body.classList.remove('publify--is-editing');
+                Array.prototype.forEach.call(document.querySelectorAll('[editable]'), function(el) {
+                    el.contentEditable = false;
+                });
+                document.body.classList.remove('publify-editing');
+            };
+            
+            //publify.startEdit();
+        });
+    </script>    
+</body>

@@ -1,0 +1,14 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Open Sans', sans-serif;
+}
+
+i.fa.tool--font-color {
+    border-bottom: 3px solid currentColor;
+}
+
+.important-download-available {
+    color: #e64;
+}
