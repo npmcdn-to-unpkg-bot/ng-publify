@@ -1,5 +1,5 @@
 class User {
-    static login(username, password) {
-        
+    login(username, password) {
+    
     }
 }

@@ -1,5 +1,7 @@
 (function(app) {
-    app.serverUrl = "http://localhost:3000";
+    app.serverUrl = "localhost:3000";
+    app.useSecureConnecion = false;
+    app.dataConnectionErrorUrl = "/404.html";
     
     app.AppComponent = ng.core.Component({
         selector: 'my-app',
@@ -32,10 +34,20 @@
                             }
                         }
                     })(app.page, document.documentElement);
+                } else if(xhttp.readyState == 4) {
+                    window.location = app.dataConnectionErrorUrl;
                 }
             };
-            xhttp.open("GET", app.serverUrl + '/p/' + ~~(1000000*Math.random()), true);
+            xhttp.open("GET", 'http' + (app.useSecureConnecion ? 's' : '') + '://' + app.serverUrl + '/p/' + ~~(1000000*Math.random()), true);
             xhttp.send();
+            
+            app.webSocket = { 
+                ws: new WebSocket('ws://' + app.serverUrl),
+                send: function(cmd, data) {
+                    app.webSocket.ws.send(cmd + ':' + JSON.stringify(data));
+                }
+            };
+            
         }
     });
 

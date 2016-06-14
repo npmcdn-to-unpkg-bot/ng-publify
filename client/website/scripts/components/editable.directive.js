@@ -5,6 +5,7 @@
         selector: '[editable]',
         host: {
             '(input)': 'emit($event)',
+            '(focus)': 'emitStart($event)'
         },
         inputs: ['counterValue:init']
     }).Class({
@@ -15,6 +16,22 @@
         ngAfterViewInit: function() {
             console.log(this);
         },
+        emitStart: function($event) {
+            var container = (function getContainer(el) {
+                if(el.parentElement) {
+                    if(el.parentElement.getAttribute('container')) {
+                        return el.parentElement;
+                    } else {
+                        return getContainer(el.parentElement);
+                    }
+                } else return document.body;
+            })($event.srcElement);
+            
+            app.webSocket.send('EDIT_START', {
+                containerId: container.getAttribute('container'),
+                editableId: $event.srcElement.getAttribute('editable')
+            });
+        },
         emit: function($event) {
             var container = (function getContainer(el) {
                 if(el.parentElement) {
@@ -23,18 +40,16 @@
                     } else {
                         return getContainer(el.parentElement);
                     }
-                } else return null;
+                } else return document.body;
             })($event.srcElement);
             
-            if(container) {
-                console.log(container.getAttribute('container') + '.' + $event.srcElement.getAttribute('editable') + ': ' + $event.srcElement.innerHTML);
-                // Send package to server and other editors!
-                
-            }
+            app.webSocket.send('EDIT',
+                $event.srcElement.innerHTML
+            );
             
             $event.srcElement;
 
-            this.emitValue.emit('This is some value from children');
+            this.emitter.emit('This is some value from children');
         }
 
     });

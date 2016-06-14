@@ -7,6 +7,7 @@
     "cms"
   ],
   "dependencies": {
-    "express": "5.0.0-alpha.2"
+    "express": "5.0.0-alpha.2",
+    "express-ws": "^2.0.0-rc.1"
   }
 }
