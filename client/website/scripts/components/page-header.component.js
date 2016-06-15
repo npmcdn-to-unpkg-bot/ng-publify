@@ -16,12 +16,15 @@
         ngOnInit: function() {
             // app.root will, if not already cached, fetch the root element from the server.
             // root.children will fetch all children of the element from the server, if not already cached.
-            app.root.children.filter(x => x.pageType === 'article').forEach(function(page) {
-                console.log(page);
+            app.root(root => root.children(children => 
+                console.log(children);
+            ));
+            
+            app.$root(function(root) {
+                root.$children(function(children) {
+                    console.log(children);
+                });
             });
         }
     });
-
-    
-    
 })(window.app || (window.app = {}));

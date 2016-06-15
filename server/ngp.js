@@ -28,11 +28,12 @@ var errtext = 'Error text from server';
     });
     
     app.get('/', function (req, res) {
-      res.send('Hello World!');
+        res.send('TODO: Go to root element');
     });
     
-    app.get('/p/:page', function (req, res) {
+    app.get('/content/getPage/:pageId', function (req, res) {
         res.send(JSON.stringify({
+            //id: '4212-4674-7843-2054-98',
             containers: {
                 main: {
                     containers: {
@@ -75,9 +76,8 @@ var errtext = 'Error text from server';
         }));
     });
     
-    // Editor WebSocket stuff
     app.ws('/', function (webSocket, req) {
-        console.log('Editor connected with WebSocket');
+        console.log('User connected with WebSocket');
         
         var user = { 
             webSocket: webSocket, 
@@ -95,6 +95,10 @@ var errtext = 'Error text from server';
             console.log(cmd, data);
             
             switch(cmd) {
+                case 'CONTENT':
+                    
+                    break;
+                    
                 case 'PAGE_LOAD':
                     user.relativePath = data.relativePath;
                     break;
