@@ -35,7 +35,8 @@
                         }
                     })(app.page, document.documentElement);
                 } else if(xhttp.readyState == 4) {
-                    window.location = app.dataConnectionErrorUrl;
+                    console.error(xhttp);
+                    //window.location = app.dataConnectionErrorUrl;
                 }
             };
             xhttp.open("GET", 'http' + (app.useSecureConnecion ? 's' : '') + '://' + app.serverUrl + '/p/' + ~~(1000000*Math.random()), true);
