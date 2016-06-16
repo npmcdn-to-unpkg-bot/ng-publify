@@ -1,4 +1,4 @@
-class Page {
+export class Page {
     constructor(id) {
         this.id = id;
     }
@@ -6,7 +6,3 @@ class Page {
         app.content.getChildrenOfPage(this)
     }
 }
-
-(function(app) {
-    
-})(window.app || (window.app = {}));

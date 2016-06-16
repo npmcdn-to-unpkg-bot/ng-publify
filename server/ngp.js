@@ -13,6 +13,8 @@ var errtext = 'Error text from server';
 
 (function() {
     
+    console.log('HOST: initializing');
+    
     app.use(function (req, res, next) {
         // Website you wish to allow to connect
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -124,7 +126,7 @@ var errtext = 'Error text from server';
     var aWss = expressWs.getWss('/');
     
     app.listen(3000, function () {
-      console.log('ng-publify started successfully');
+        console.log('HOST: listening on localhost:3000');
     });
     
 })();

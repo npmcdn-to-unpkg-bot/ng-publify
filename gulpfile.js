@@ -1,35 +1,42 @@
-var gulp = require("gulp");
-var babel = require("gulp-babel");
-var concat = require("gulp-concat");
-var sourcemaps = require("gulp-sourcemaps");
-var connect = require("gulp-connect");
-var open = require("gulp-open");
+var gulp = require('gulp');
+var sourcemaps = require('gulp-sourcemaps');
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var browserify = require('browserify');
+var watchify = require('watchify');
+var babel = require('babelify');
 
-gulp.task("html", function () {
-  return gulp.src(["client/src/html.js", "client/src/**/*.html"])
-    .pipe(gulp.dest("client/dist"));
-});
+function compile(watch) {
+  var bundler = watchify(browserify('./client/website/scripts/app_boot.js', { debug: true }).transform(babel.configure({
+        // Use all of the ES2015 spec
+        presets: ["es2015"]
+    })));
 
-gulp.task("babel", function () {
-    return gulp.src("client/src/**/*.js")
-    .pipe(sourcemaps.init())
-    .pipe(babel({
-			presets: ['es2015']
-		}))
-    .pipe(concat("bundle.js"))
-    .pipe(sourcemaps.write("."))
-    .pipe(gulp.dest("client/dist"));
-});
+  function rebundle() {
+    bundler.bundle()
+      .on('error', function(err) { console.error(err); this.emit('end'); })
+      .pipe(source('build.js'))
+      .pipe(buffer())
+      .pipe(sourcemaps.init({ loadMaps: true }))
+      .pipe(sourcemaps.write('./'))
+      .pipe(gulp.dest('./build'));
+  }
 
-gulp.task('connect', function() {
-  connect.server({
-    livereload: true
-  });
-});
+  if (watch) {
+    bundler.on('update', function() {
+      console.log('-> bundling...');
+      rebundle();
+    });
+  }
 
-gulp.task('open', ['html', 'babel', 'connect'], function () {
-  gulp.src('client/dist/index.html')
-    .pipe(connect.reload());
-});
+  rebundle();
+}
 
-gulp.task('default', ['open']);
+function watch() {
+  return compile(true);
+};
+
+gulp.task('build', function() { return compile(); });
+gulp.task('watch', function() { return watch(); });
+
+gulp.task('default', ['watch']);

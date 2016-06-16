@@ -1,7 +1,10 @@
 (function(app) {
     class ContentFetcher {
-        cache: new Set(),
-        _get: function(path, values, callback) {
+        constructor(height, width) {
+            this.cache = new Set();
+        }
+        
+        _get(path, values, callback) {
             var valuesAsString;
             for(var key in values) valuesAsString += values[key];
             
@@ -18,8 +21,9 @@
                     
                 }
             }
-        },
-        getChildrenOfPage: function(page, callback) {
+        }
+        
+        getChildrenOfPage(page, callback) {
             _get('/content/getPage/:pageId', page.id, callback)
         }
     }

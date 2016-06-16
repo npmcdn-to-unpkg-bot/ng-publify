@@ -1,3 +1,7 @@
+import ngpToolbox from './components/toolbox.component.js';
+import ngpEditable from './components/editable.directive.js';
+import Page from './classes/page.class.js';
+
 (function(app) {
     app.serverUrl = "localhost:3000";
     
@@ -29,7 +33,7 @@
     app.AppComponent = ng.core.Component({
         selector: 'my-app',
         templateUrl: 'templates/pagetypes/frontpage.html',
-        directives: [app.components.ngpToolbox, app.components.ngpEditable]
+        directives: [ngpToolbox, ngpEditable]
     }).Class({
         constructor: function() {
             // These settings should be fetched from the user's usergroup on load, editors will normally use WebSockets while endusers will use HTTP.
@@ -44,20 +48,19 @@
             xhttp.onreadystatechange = function() {
                 if (xhttp.readyState == 4 && xhttp.status == 200) {
                     app.page = JSON.parse(xhttp.responseText);
-                    app.page.prototype = Page.prototype;
-                    //app.page = Object.create(Page, app.page);
+                    //app.page.prototype = Page.prototype;
                     //app.page.Populate();
                     
                     (function populateData(data, el) {
-                        for(editableId in data.editables) {
+                        for(var editableId in data.editables) {
                             el.querySelector('[editable="' + editableId + '"]').innerHTML = data.editables[editableId];
                         }
 
-                        for(moduleId in data.modules) {
+                        for(var moduleId in data.modules) {
                             
                         }
 
-                        for(containerId in data.containers) {
+                        for(var containerId in data.containers) {
                             var containerEl = el.querySelector('[container="' + containerId + '"]');
                             if(containerEl) {
                                 populateData(data.containers[containerId], containerEl);
@@ -80,4 +83,34 @@
         ng.platformBrowserDynamic.bootstrap(app.AppComponent);
     });
     
+
+    // Move to own file:
+    document.addEventListener('DOMContentLoaded', function() {
+        app.activeElement = null;
+
+        app.startEdit = function() {
+            document.body.classList.add('publify--is-editing');
+            Array.prototype.forEach.call(document.querySelectorAll('[editable]'), function(el) {
+                el.contentEditable = true;
+                el.addEventListener('focus', function(e) {
+                   app.activeElement = e.target;
+                });
+                el.addEventListener('blur', function(e) {
+                    e.preventDefault();
+                });
+            });
+
+            document.body.classList.add('publify-editing');
+        };
+        app.endEdit = function() {
+            document.body.classList.remove('publify--is-editing');
+            Array.prototype.forEach.call(document.querySelectorAll('[editable]'), function(el) {
+                el.contentEditable = false;
+            });
+            document.body.classList.remove('publify-editing');
+        };
+
+        //publify.startEdit();
+    });
+
 })(window.app || (window.app = {}));

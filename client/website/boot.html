@@ -2,8 +2,8 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,600" rel="stylesheet" type="text/css">
     <script src="https://use.fontawesome.com/9a243e8eb3.js"></script>
     
-    <link id="ngp-toolbox" href="../ng-publify/style/ngp-toolbox.css" rel="stylesheet" type="text/css">
-    <link id="ngp-edit" href="../ng-publify/style/ngp-edit.css" rel="stylesheet" type="text/css">
+    <link id="ngp-toolbox" href="/client/ng-publify/style/ngp-toolbox.css" rel="stylesheet" type="text/css">
+    <link id="ngp-edit" href="/client/ng-publify/style/ngp-edit.css" rel="stylesheet" type="text/css">
     
     <link id="global" href="style/global.css" rel="stylesheet" type="text/css">
     
@@ -17,21 +17,14 @@
     <script src="https://npmcdn.com/@angular/platform-browser/bundles/platform-browser.umd.js"></script>
     <script src="https://npmcdn.com/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js"></script>
     
-    <script src="scripts/classes/page.class.js"></script>
-    <script src="scripts/components/toolbox.component.js"></script>
-    <script src="scripts/components/editable.directive.js"></script>
-    <script src="scripts/app_boot.js"></script>
+    
+    <script src="/build/build.js"></script>
     
     <!--
-    <script>
-        (function(ngp) {
-            
-            
-            document.addEventListener('DOMContentLoaded', function() {
-                ng.platformBrowserDynamic.bootstrap(ngp.AppComponent);
-            });
-        })(window.ngp || (window.ngp = {}));
-    </script>
+        <script src="scripts/classes/page.class.js"></script>
+        <script src="scripts/components/toolbox.component.js"></script>
+        <script src="scripts/components/editable.directive.js"></script>
+        <script src="scripts/app_boot.js"></script>
     -->
     
 </head>
@@ -39,33 +32,6 @@
     <my-app></my-app>
     
     <script>
-        var publify = {};
-        document.addEventListener('DOMContentLoaded', function() {
-            publify.activeElement = null;
-
-            publify.startEdit = function() {
-                document.body.classList.add('publify--is-editing');
-                Array.prototype.forEach.call(document.querySelectorAll('[editable]'), function(el) {
-                    el.contentEditable = true;
-                    el.addEventListener('focus', function(e) {
-                       publify.activeElement = e.target;
-                    });
-                    el.addEventListener('blur', function(e) {
-                        e.preventDefault();
-                    });
-                });
-
-                document.body.classList.add('publify-editing');
-            };
-            publify.endEdit = function() {
-                document.body.classList.remove('publify--is-editing');
-                Array.prototype.forEach.call(document.querySelectorAll('[editable]'), function(el) {
-                    el.contentEditable = false;
-                });
-                document.body.classList.remove('publify-editing');
-            };
-            
-            //publify.startEdit();
-        });
+        
     </script>    
 </body>
