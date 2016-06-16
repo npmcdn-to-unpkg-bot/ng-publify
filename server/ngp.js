@@ -12,8 +12,7 @@ var GET_MODULE_ON = {
 var errtext = 'Error text from server';
 
 (function() {
-    
-    console.log('HOST: initializing');
+    console.log('ngp: initializing');
     
     app.use(function (req, res, next) {
         // Website you wish to allow to connect
@@ -34,6 +33,8 @@ var errtext = 'Error text from server';
     });
     
     app.get('/content/getPage/:pageId', function (req, res) {
+        console.log('ngp: received HTTP [getPage] request');
+        
         res.send(JSON.stringify({
             //id: '4212-4674-7843-2054-98',
             containers: {
@@ -58,6 +59,8 @@ var errtext = 'Error text from server';
                 }
             }
         }));
+        
+        console.log('ngp: responded to HTTP [getPage] request');
     });
     
     app.get('/p/:page/m/:module', function (req, res) {
@@ -79,7 +82,7 @@ var errtext = 'Error text from server';
     });
     
     app.ws('/', function (webSocket, req) {
-        console.log('User connected with WebSocket');
+        console.log('ngp: websocket connection started, total connection: ' + aWss.clients.length);
         
         var user = { 
             webSocket: webSocket, 
@@ -91,10 +94,14 @@ var errtext = 'Error text from server';
         };
         webSocket.user = user;
         
+        webSocket.on('close', function() {
+            console.log('ngp: websocket connection closed, total connection: ' + aWss.clients.length);
+        });
+        
         webSocket.on('message', function (msg) {
             var cmd = msg.substr(0, msg.indexOf(':'));
             var data = JSON.parse(msg.substr(msg.indexOf(':') + 1));
-            console.log(cmd, data);
+            console.log('ngp:', cmd, data);
             
             switch(cmd) {
                 case 'CONTENT':
@@ -126,7 +133,7 @@ var errtext = 'Error text from server';
     var aWss = expressWs.getWss('/');
     
     app.listen(3000, function () {
-        console.log('HOST: listening on localhost:3000');
+        console.log('ngp: listening on localhost:3000');
     });
     
 })();
