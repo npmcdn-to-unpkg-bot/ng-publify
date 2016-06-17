@@ -1,7 +1,4 @@
-var path    = require("path");
-var express = require('express');
-    app = new express();
-var expressWs = require('express-ws')(app);
+var path = require("path");
 
 var GET_MODULE_ON = {
     NEVER: 0,
@@ -10,9 +7,12 @@ var GET_MODULE_ON = {
     MODULE_IN_VIEW: 3
 };
 
-var errtext = 'Error text from server';
+var dir = {
+    root: __dirname.replace('/ng-publify-core/nodejs', ''),
+    website: __dirname.replace('/ng-publify-core/nodejs', '/demosite')
+};
 
-var rootdata = JSON.stringify({
+var rootdata = {
     //id: '4212-4674-7843-2054-98',
     containers: {
         main: {
@@ -20,7 +20,7 @@ var rootdata = JSON.stringify({
 
             },
             editables: {
-                error_text: errtext
+                error_text: 'Error text from server'
             },
             modules: {
                 'm_5499-0094-5301-24': {
@@ -35,17 +35,21 @@ var rootdata = JSON.stringify({
             }
         }
     }
-});
+};
 
 module.exports = class ngp {
     constructor(config) {
-        
+        this.express = config.express;
+        this.expressWs = config.expressWs;
     }
     
     init() {
         console.log('ngp: initializing');
 
-        app.use(function (req, res, next) {
+        this.app = new this.express();
+        this.appWs = this.expressWs(this.app);
+        
+        this.app.use(function (req, res, next) {
             // Website you wish to allow to connect
             res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -59,21 +63,25 @@ module.exports = class ngp {
             next();
         });
         
-        app.use('/', express.static(path.join(__dirname, '../')));
+        this.app.use('/', this.express.static(dir.root));
 
-        app.get('/', function (req, res) {
-            res.sendFile(path.join(__dirname, '../website/boot.html'));
+        this.app.get('/', function (req, res) {
+            res.sendFile(path.join(dir.website, '/boot.html'));
+        });
+        
+        this.app.get('/publify', function (req, res) {
+            res.send('Login please');
         });
 
-        app.get('/get', function (req, res) {
+        this.app.get('/get', function (req, res) {
             console.log('ngp: received HTTP [get] request');
 
-            res.send(rootdata);
+            res.send(JSON.stringify(rootdata));
 
             console.log('ngp: responded to HTTP [get] request');
         });
 
-        app.ws('/', function (webSocket, req) {
+        this.app.ws('/', function (webSocket, req) {
             console.log('ngp: websocket connection started, total connection: ' + aWss.clients.length);
 
             var user = { 
@@ -84,6 +92,7 @@ module.exports = class ngp {
                     editableId: null
                 }
             };
+            
             webSocket.user = user;
 
             webSocket.on('close', function() {
@@ -92,16 +101,18 @@ module.exports = class ngp {
 
             webSocket.on('message', function (msg) {
                 console.log('ngp:', decodeURIComponent(msg));
+                var msgSplit = msg.split(':');
+                if(msgSplit.length === 0) return;
+                var cmd = msgSplit[0];
+                
+                var params = (msgSplit.length >= 2) ? JSON.parse(decodeURIComponent(msgSplit[1])) : undefined;
+                var data = (msgSplit.length >= 3) ? JSON.parse(decodeURIComponent(msgSplit[2])) : undefined;
+                
                 switch(cmd) {
                     case 'GET':
-                        // Get content
-                            var msgSplit = msg.split(':');
-                            var cmd = msgSplit[0];
-                            var params = msgSplit[1];
-                            var data = JSON.parse(decodeURIComponent(msgSplit[2]));
+                        // Return content
+                        webSocket.send('GETRESPONSE:' +  encodeURIComponent(JSON.stringify(params)) + ':' + encodeURIComponent(JSON.stringify(rootdata)));
                         
-                            webSocket.send(rootdata);
-                            
                         break;
 
                     case 'PAGELOAD':
@@ -113,22 +124,22 @@ module.exports = class ngp {
                         break;
 
                     case 'EDITSTART':
-                        user.scope.containerId = data.containerId;
-                        user.scope.editableId = data.editableId;
+                        user.scope.containerId = params.containerId;
+                        user.scope.editableId = params.editableId;
                         break;
 
                     case 'EDIT':
-                        errtext = data;
+                        rootdata.containers.main.editables.error_text = data;
                         aWss.clients.filter(x => x !== webSocket && x.user.relativePath === user.relativePath).forEach(function(ws) {
-                            ws.send('yoyo');
+//                            ws.send('hmm');
                         });
                         break;
                 }
             });
         });
-        var aWss = expressWs.getWss('/');
+        var aWss = this.appWs.getWss('/');
 
-        app.listen(3000, function () {
+        this.app.listen(3000, function () {
             console.log('ngp: listening on localhost:3000');
         });
     }

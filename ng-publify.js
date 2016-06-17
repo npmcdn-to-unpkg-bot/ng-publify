@@ -1,5 +1,8 @@
 var package = require('./package.json');
-var Publify = require('./app/ng-publify-core/core.js');
+var Publify = require('./ng-publify-core/nodejs/ngp.js');
+
+var express = require('express');
+var expressWs = require('express-ws');
 
 //var ngp_module_module_01 = require('./node_modules/');
 
@@ -10,6 +13,9 @@ console.log('\n ngp:' +
             '\n');
 
 // Start server
-var ngp_config = {};
+var ngp_config = {
+    express: express,
+    expressWs: expressWs
+};
 ngp = new Publify(ngp_config);
 ngp.init();

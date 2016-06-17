@@ -41,7 +41,7 @@ export default ng.core.Directive({
             } else return document.body;
         })($event.srcElement);
 
-        app.webSocket.send('EDIT',
+        app.webSocket.send('EDIT', null,
             $event.srcElement.innerHTML
         );
 

@@ -18,7 +18,7 @@ window.addEventListener('keyup', updateTools);
 
 export default ng.core.Component({
     selector: 'ngp-toolbox',
-    templateUrl: '/ng-publify-core/templates/toolbox.html'
+    templateUrl: '/ng-publify-core/templates/partials/toolbox.html'
 }).Class({
     constructor: function() {
         

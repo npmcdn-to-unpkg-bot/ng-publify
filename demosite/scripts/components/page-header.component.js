@@ -10,7 +10,7 @@
     
     app.components.ngpToolbox = ng.core.Component({
         selector: 'page-header',
-        templateUrl: '/client/website/templates/partials/page-header.html'
+        templateUrl: 'demosite/templates/partials/page-header.html'
     }).Class({
         constructor: function() {},
         ngOnInit: function() {

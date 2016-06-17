@@ -6,8 +6,10 @@ var browserify = require('browserify');
 var watchify = require('watchify');
 var babel = require('babelify');
 
+const site_name = 'demosite';
+
 function compile(watch) {
-    var bundler = watchify(browserify('./app/website/scripts/app_boot.js', {
+    var bundler = watchify(browserify('./' + site_name + '/scripts/app_boot.js', {
         debug: true
     }).transform(babel.configure({
         // Use all of the ES2015 spec
@@ -20,13 +22,14 @@ function compile(watch) {
                 console.error(err);
                 this.emit('end');
             })
-            .pipe(source('app.build.js'))
+            .pipe(source(site_name + '.build.js'))
             .pipe(buffer())
             .pipe(sourcemaps.init({
                 loadMaps: true
             }))
             .pipe(sourcemaps.write('./'))
-            .pipe(gulp.dest('./app/website/scripts/build'));
+            .pipe(gulp.dest('./' + site_name + '/scripts'));
+        
     }
 
     if (watch) {
@@ -41,7 +44,7 @@ function compile(watch) {
 
 function watch() {
     return compile(true);
-};
+}
 
 gulp.task('build', function () {
     return compile();
