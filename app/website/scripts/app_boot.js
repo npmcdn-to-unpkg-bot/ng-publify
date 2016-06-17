@@ -10,29 +10,51 @@ import Page from './classes/page.class.js';
     app.useSecureConnecion = false;
     app.dataConnectionErrorMessage = "Dataserver error";
     
-    
     app.webSocket = {
         ws: new WebSocket('ws://' + app.serverUrl + '/'),
-        send: function(cmd, data) {
-            app.webSocket.ws.send(cmd + ':' + JSON.stringify(data));
-        },
-        get: function(path, callback) {
-            app.webSocket.ws.send('CONTENT:' + path);
-            app.webSocket.ws.onmessage = function(event) {
-                callback(event.data);
+        pendingGetRequests: [],
+        getUniqueRequestId: function() {
+            var guid = 0;
+            while(app.webSocket.pendingGetRequests.filter(x => x.guid === guid).length) {
+                guid = ~~(Math.random() * 9e3);
             }
+            return guid;
+        },
+        send: function(cmd, params) {
+            app.webSocket.ws.send(cmd + ':' + encodeURIComponent(JSON.stringify(params)));
+        },
+        get: function(id, callback) {
+            var preq = app.webSocket.pendingGetRequests.push({ guid: app.webSocket.getUniqueRequestId(), callback: callback});
+            app.webSocket.ws.send('GET:' + preq.guid + ':' + id);
         }
     }
+    
+    app.webSocket.ws.addEventListener('message', function() {
+    
+    });
 
     app.http = {
-        get: function(path, callback) {
-            callback({ data: 123 })
+        send: function(cmd, params) {
+            
+        },
+        get: function(id, callback) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (xhttp.readyState == 4 && xhttp.status == 200) {
+                    callback(JSON.parse(xhttp.responseText));
+                } else if(xhttp.readyState == 4) {
+                    console.error(xhttp);
+                    callback(null);
+                }
+            };
+            xhttp.open("GET", 'http' + (app.useSecureConnecion ? 's' : '') + '://' + app.serverUrl + '/get/?id=' + id, true);
+            xhttp.send();
         }
     }
     
     app.AppComponent = ng.core.Component({
         selector: 'my-app',
-        templateUrl: 'templates/pagetypes/frontpage.html',
+        templateUrl: '/website/templates/pagetypes/frontpage.html',
         directives: [ngpToolbox, ngpEditable]
     }).Class({
         constructor: function() {
@@ -41,41 +63,29 @@ import Page from './classes/page.class.js';
             
             app.contentCacheEnabled = true; // This defaults to true. False means we will not cache data we fetch, should rarely be disabled.
             app.contentCacheLocalStorageMs = 1000 * 60 * 60 * 24 * 3;   // [-1] Store cache over browser sessions?
-        },
+        }, 
         ngOnInit: function() {
-            // Initial population            
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (xhttp.readyState == 4 && xhttp.status == 200) {
-                    app.page = JSON.parse(xhttp.responseText);
-                    //app.page.prototype = Page.prototype;
-                    //app.page.Populate();
-                    
-                    (function populateData(data, el) {
-                        for(var editableId in data.editables) {
-                            el.querySelector('[editable="' + editableId + '"]').innerHTML = data.editables[editableId];
-                        }
+            // Initial population           
+            app.webSocket.get('1234-5678', function(data)  {
+                app.page = data;
+                
+                (function populateData(data, el) {
+                    for(var editableId in data.editables) {
+                        el.querySelector('[editable="' + editableId + '"]').innerHTML = data.editables[editableId];
+                    }
 
-                        for(var moduleId in data.modules) {
-                            
-                        }
+                    for(var moduleId in data.modules) {
 
-                        for(var containerId in data.containers) {
-                            var containerEl = el.querySelector('[container="' + containerId + '"]');
-                            if(containerEl) {
-                                populateData(data.containers[containerId], containerEl);
-                            }
+                    }
+
+                    for(var containerId in data.containers) {
+                        var containerEl = el.querySelector('[container="' + containerId + '"]');
+                        if(containerEl) {
+                            populateData(data.containers[containerId], containerEl);
                         }
-                    })(app.page, document.documentElement);
-                } else if(xhttp.readyState == 4) {
-                    console.error(xhttp);
-                    document.clear();
-                    document.write(app.dataConnectionErrorMessage);
-                }
-            };
-            xhttp.open("GET", 'http' + (app.useSecureConnecion ? 's' : '') + '://' + app.serverUrl + '/content/getPage/' + ~~(1000000*Math.random()), true);
-            xhttp.send();
-            
+                    }
+                })(app.page, document.documentElement);
+            });
         }
     });
 
@@ -109,7 +119,7 @@ import Page from './classes/page.class.js';
             });
             document.body.classList.remove('publify-editing');
         };
-
+        
         //publify.startEdit();
     });
 

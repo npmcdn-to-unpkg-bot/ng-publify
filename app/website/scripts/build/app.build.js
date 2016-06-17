@@ -25,26 +25,47 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
     app.webSocket = {
         ws: new WebSocket('ws://' + app.serverUrl + '/'),
-        send: function send(cmd, data) {
-            app.webSocket.ws.send(cmd + ':' + JSON.stringify(data));
+        pendingGetRequests: [],
+        getUniqueRequestId: function getUniqueRequestId() {
+            var guid = 0;
+            while (app.webSocket.pendingGetRequests.filter(function (x) {
+                return x.guid === guid;
+            }).length) {
+                guid = ~ ~(Math.random() * 9e3);
+            }
+            return guid;
         },
-        get: function get(path, callback) {
-            app.webSocket.ws.send('CONTENT:' + path);
-            app.webSocket.ws.onmessage = function (event) {
-                callback(event.data);
-            };
+        send: function send(cmd, params) {
+            app.webSocket.ws.send(cmd + ':' + encodeURIComponent(JSON.stringify(params)));
+        },
+        get: function get(id, callback) {
+            var preq = app.webSocket.pendingGetRequests.push({ guid: app.webSocket.getUniqueRequestId(), callback: callback });
+            app.webSocket.ws.send('GET:' + preq.guid + ':' + id);
         }
     };
 
+    app.webSocket.ws.addEventListener('message', function () {});
+
     app.http = {
-        get: function get(path, callback) {
-            callback({ data: 123 });
+        send: function send(cmd, params) {},
+        get: function get(id, callback) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (xhttp.readyState == 4 && xhttp.status == 200) {
+                    callback(JSON.parse(xhttp.responseText));
+                } else if (xhttp.readyState == 4) {
+                    console.error(xhttp);
+                    callback(null);
+                }
+            };
+            xhttp.open("GET", 'http' + (app.useSecureConnecion ? 's' : '') + '://' + app.serverUrl + '/get/?id=' + id, true);
+            xhttp.send();
         }
     };
 
     app.AppComponent = ng.core.Component({
         selector: 'my-app',
-        templateUrl: 'templates/pagetypes/frontpage.html',
+        templateUrl: '/website/templates/pagetypes/frontpage.html',
         directives: [_toolboxComponent2.default, _editableDirective2.default]
     }).Class({
         constructor: function constructor() {
@@ -55,36 +76,25 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             app.contentCacheLocalStorageMs = 1000 * 60 * 60 * 24 * 3; // [-1] Store cache over browser sessions?
         },
         ngOnInit: function ngOnInit() {
-            // Initial population           
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (xhttp.readyState == 4 && xhttp.status == 200) {
-                    app.page = JSON.parse(xhttp.responseText);
-                    //app.page.prototype = Page.prototype;
-                    //app.page.Populate();
+            // Initial population          
+            app.webSocket.get('1234-5678', function (data) {
+                app.page = data;
 
-                    (function populateData(data, el) {
-                        for (var editableId in data.editables) {
-                            el.querySelector('[editable="' + editableId + '"]').innerHTML = data.editables[editableId];
+                (function populateData(data, el) {
+                    for (var editableId in data.editables) {
+                        el.querySelector('[editable="' + editableId + '"]').innerHTML = data.editables[editableId];
+                    }
+
+                    for (var moduleId in data.modules) {}
+
+                    for (var containerId in data.containers) {
+                        var containerEl = el.querySelector('[container="' + containerId + '"]');
+                        if (containerEl) {
+                            populateData(data.containers[containerId], containerEl);
                         }
-
-                        for (var moduleId in data.modules) {}
-
-                        for (var containerId in data.containers) {
-                            var containerEl = el.querySelector('[container="' + containerId + '"]');
-                            if (containerEl) {
-                                populateData(data.containers[containerId], containerEl);
-                            }
-                        }
-                    })(app.page, document.documentElement);
-                } else if (xhttp.readyState == 4) {
-                    console.error(xhttp);
-                    document.clear();
-                    document.write(app.dataConnectionErrorMessage);
-                }
-            };
-            xhttp.open("GET", 'http' + (app.useSecureConnecion ? 's' : '') + '://' + app.serverUrl + '/content/getPage/' + ~ ~(1000000 * Math.random()), true);
-            xhttp.send();
+                    }
+                })(app.page, document.documentElement);
+            });
         }
     });
 
@@ -181,7 +191,7 @@ exports.default = ng.core.Directive({
             } else return document.body;
         }($event.srcElement);
 
-        app.webSocket.send('EDIT_START', {
+        app.webSocket.send('EDITSTART', {
             containerId: container.getAttribute('container'),
             editableId: $event.srcElement.getAttribute('editable')
         });
@@ -231,7 +241,7 @@ window.addEventListener('keyup', updateTools);
 
 exports.default = ng.core.Component({
     selector: 'ngp-toolbox',
-    templateUrl: '/client/ng-publify/templates/toolbox.html'
+    templateUrl: '/ng-publify-core/templates/toolbox.html'
 }).Class({
     constructor: function constructor() {}
 });
@@ -239,4 +249,4 @@ exports.default = ng.core.Component({
 },{}]},{},[1])
 
 
-//# sourceMappingURL=build.js.map
+//# sourceMappingURL=app.build.js.map

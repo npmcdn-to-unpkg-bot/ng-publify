@@ -25,7 +25,7 @@ export default ng.core.Directive({
             } else return document.body;
         })($event.srcElement);
 
-        app.webSocket.send('EDIT_START', {
+        app.webSocket.send('EDITSTART', {
             containerId: container.getAttribute('container'),
             editableId: $event.srcElement.getAttribute('editable')
         });

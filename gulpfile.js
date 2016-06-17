@@ -7,36 +7,47 @@ var watchify = require('watchify');
 var babel = require('babelify');
 
 function compile(watch) {
-  var bundler = watchify(browserify('./client/website/scripts/app_boot.js', { debug: true }).transform(babel.configure({
+    var bundler = watchify(browserify('./app/website/scripts/app_boot.js', {
+        debug: true
+    }).transform(babel.configure({
         // Use all of the ES2015 spec
         presets: ["es2015"]
     })));
 
-  function rebundle() {
-    bundler.bundle()
-      .on('error', function(err) { console.error(err); this.emit('end'); })
-      .pipe(source('build.js'))
-      .pipe(buffer())
-      .pipe(sourcemaps.init({ loadMaps: true }))
-      .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest('./build'));
-  }
+    function rebundle() {
+        bundler.bundle()
+            .on('error', function (err) {
+                console.error(err);
+                this.emit('end');
+            })
+            .pipe(source('app.build.js'))
+            .pipe(buffer())
+            .pipe(sourcemaps.init({
+                loadMaps: true
+            }))
+            .pipe(sourcemaps.write('./'))
+            .pipe(gulp.dest('./app/website/scripts/build'));
+    }
 
-  if (watch) {
-    bundler.on('update', function() {
-      console.log('-> bundling...');
-      rebundle();
-    });
-  }
+    if (watch) {
+        bundler.on('update', function () {
+            console.log('-> bundling...');
+            rebundle();
+        });
+    }
 
-  rebundle();
+    rebundle();
 }
 
 function watch() {
-  return compile(true);
+    return compile(true);
 };
 
-gulp.task('build', function() { return compile(); });
-gulp.task('watch', function() { return watch(); });
+gulp.task('build', function () {
+    return compile();
+});
+gulp.task('watch', function () {
+    return watch();
+});
 
 gulp.task('default', ['watch']);
