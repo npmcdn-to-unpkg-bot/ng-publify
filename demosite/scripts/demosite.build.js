@@ -114,7 +114,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     }).Class({
         constructor: function constructor() {
             // These settings should be fetched from the user's usergroup on load, editors will normally use WebSockets while endusers will use HTTP.
-            app.editorConnectionMode = app.WEBSOCKET_PREFER; // Users will setup a WebSocket connection to the data-server instead of using HTTP requests if possible.
+            app.editorConnectionMode = app.HTTP_ONLY; // Users will setup a WebSocket connection to the data-server instead of using HTTP requests if possible.
 
             app.contentCacheEnabled = true; // This defaults to true. False means we will not cache data we fetch, should rarely be disabled.
             app.contentCacheLocalStorageMs = 1000 * 60 * 60 * 24 * 3; // [-1] Store cache over browser sessions?

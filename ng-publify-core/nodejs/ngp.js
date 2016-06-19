@@ -1,4 +1,5 @@
 var path = require("path");
+var Db = require('./db.js');
 
 var GET_MODULE_ON = {
     NEVER: 0,
@@ -9,32 +10,8 @@ var GET_MODULE_ON = {
 
 var dir = {
     root: __dirname.replace('/ng-publify-core/nodejs', ''),
-    website: __dirname.replace('/ng-publify-core/nodejs', '/demosite')
-};
-
-var rootdata = {
-    //id: '4212-4674-7843-2054-98',
-    containers: {
-        main: {
-            containers: {
-
-            },
-            editables: {
-                error_text: 'Error text from server'
-            },
-            modules: {
-                'm_5499-0094-5301-24': {
-                    getOn: GET_MODULE_ON.PAGE_LOAD_STATIC,
-                    data: {
-
-                    }
-                },
-                'm_8492-1823-8973-01': {
-                    getOn: GET_MODULE_ON.PAGE_LOAD_ASYNC
-                }
-            }
-        }
-    }
+    website: __dirname.replace('/ng-publify-core/nodejs', '/demosite'),
+    mongodb: "mongodb://localhost:27017/ng_publify"
 };
 
 module.exports = class ngp {
@@ -44,8 +21,11 @@ module.exports = class ngp {
     }
     
     init() {
-        console.log('ngp: initializing');
-
+        var ngp = this;
+        this.db = new Db(this, dir.mongodb);
+        
+        console.log('Initializing express webserver');
+        var self = this;
         this.app = new this.express();
         this.appWs = this.expressWs(this.app);
         
@@ -70,19 +50,22 @@ module.exports = class ngp {
         });
         
         this.app.get('/publify', function (req, res) {
-            res.send('Login please');
+            res.sendFile(path.join(dir.root, 'ng-publify-core/templates/pagetypes/ngp-login.html'));
         });
-
+        
         this.app.get('/get', function (req, res) {
-            console.log('ngp: received HTTP [get] request');
+            console.log('Received HTTP [get] request');
+            
+            self.db.get({_id: '1234-5678-9012-00'}, function(data) {
+                console.log(JSON.stringify(data));
+                res.send(JSON.stringify(data));
+            });
 
-            res.send(JSON.stringify(rootdata));
-
-            console.log('ngp: responded to HTTP [get] request');
+            console.log('Responded to HTTP [get] request');
         });
-
+        
         this.app.ws('/', function (webSocket, req) {
-            console.log('ngp: websocket connection started, total connection: ' + aWss.clients.length);
+            console.log('Websocket connection started, total connection: ' + aWss.clients.length);
 
             var user = { 
                 webSocket: webSocket, 
@@ -96,11 +79,11 @@ module.exports = class ngp {
             webSocket.user = user;
 
             webSocket.on('close', function() {
-                console.log('ngp: websocket connection closed, total connection: ' + aWss.clients.length);
+                console.log('Websocket connection closed, total connection: ' + aWss.clients.length);
             });
 
             webSocket.on('message', function (msg) {
-                console.log('ngp:', decodeURIComponent(msg));
+                console.log('Recieved ws-msg:', decodeURIComponent(msg));
                 var msgSplit = msg.split(':');
                 if(msgSplit.length === 0) return;
                 var cmd = msgSplit[0];
@@ -111,7 +94,10 @@ module.exports = class ngp {
                 switch(cmd) {
                     case 'GET':
                         // Return content
-                        webSocket.send('GETRESPONSE:' +  encodeURIComponent(JSON.stringify(params)) + ':' + encodeURIComponent(JSON.stringify(rootdata)));
+                        webSocket.send('GETRESPONSE:' +  
+                                       encodeURIComponent(JSON.stringify(params)) + ':' + 
+                                       encodeURIComponent(JSON.stringify(ngp.db.get({_id: data})))
+                                      );
                         
                         break;
 
@@ -120,16 +106,43 @@ module.exports = class ngp {
                         break;
 
                     case 'NAVIGATE':
-                        user.relativePath = data;
+                        user.scope.pageId = data;
                         break;
 
                     case 'EDITSTART':
+                        user.scope.pageId = params.pageId;
                         user.scope.containerId = params.containerId;
                         user.scope.editableId = params.editableId;
                         break;
 
                     case 'EDIT':
-                        rootdata.containers.main.editables.error_text = data;
+                        ngp.db.set({ _id: user.scope.containerId}, {
+                            _id: '1234-5678-9012-00',
+                            containers: {
+                                main: {
+                                    containers: {
+
+                                    },
+                                    editables: {
+                                        error_text: data
+                                    },
+                                    modules: {
+                                        '5499-0094-5301-24': {
+                                            getOn: GET_MODULE_ON.PAGE_LOAD_STATIC,
+                                            data: {
+
+                                            }
+                                        },
+                                        '8492-1823-8973-01': {
+                                            getOn: GET_MODULE_ON.PAGE_LOAD_ASYNC
+                                        }
+                                    }
+                                }
+                            }
+                        }, function(result) {
+                            
+                        });
+//                        rootdata.containers.main.editables.error_text = data;
                         aWss.clients.filter(x => x !== webSocket && x.user.relativePath === user.relativePath).forEach(function(ws) {
 //                            ws.send('hmm');
                         });
@@ -140,7 +153,7 @@ module.exports = class ngp {
         var aWss = this.appWs.getWss('/');
 
         this.app.listen(3000, function () {
-            console.log('ngp: listening on localhost:3000');
+            console.log('Express listening on localhost:3000');
         });
     }
 };

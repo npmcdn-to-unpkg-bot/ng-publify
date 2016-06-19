@@ -4,6 +4,8 @@ var Publify = require('./ng-publify-core/nodejs/ngp.js');
 var express = require('express');
 var expressWs = require('express-ws');
 
+const Usergroup = require('./ng-publify-core/nodejs/classes/Usergroup.class.js');
+
 //var ngp_module_module_01 = require('./node_modules/');
 
 console.log('\n ngp:' +
@@ -19,3 +21,8 @@ var ngp_config = {
 };
 ngp = new Publify(ngp_config);
 ngp.init();
+
+new Usergroup('admin')
+    .addCondition(user => user.loggedIn)
+    .addCondition(user => user.username === 'JakeCake');
+new Usergroup('default');
