@@ -4,7 +4,7 @@ module.exports = class Usergroup {
         this._conditions = [];
     }
     addCondition(condition) {
-        _conditions.push(condition);
+        this._conditions.push(condition);
         return this;
     }
 };

@@ -8,11 +8,11 @@ var GET_MODULE_ON = {
     MODULE_IN_VIEW: 3
 };
 
-var dir = {
-    root: __dirname.replace('/ng-publify-core/nodejs', ''),
-    website: __dirname.replace('/ng-publify-core/nodejs', '/demosite'),
-    mongodb: "mongodb://localhost:27017/ng_publify"
-};
+var dir = {};
+    dir.root = __dirname.split('ng-publify-core')[0];
+console.log(dir.root);
+    dir.website = dir.root + '/demosite';
+    dir.mongodb = "mongodb://localhost:27017/ng_publify";
 
 module.exports = class ngp {
     constructor(config) {
