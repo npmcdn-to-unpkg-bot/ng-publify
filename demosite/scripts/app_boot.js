@@ -155,14 +155,22 @@ import Page from './classes/page.class.js';
             });
 
             document.body.classList.add('publify-editing');
+            //document.querySelector('.doc').style.width = 1024/0.75 + "px";
         };
         app.endEdit = function() {
-            document.body.classList.remove('publify--is-editing');
+            document.body.classList.remove('publify--is-editing');   
             Array.prototype.forEach.call(document.querySelectorAll('[editable]'), function(el) {
                 el.contentEditable = false;
             });
+            
             document.body.classList.remove('publify-editing');
+            
+            document.querySelector('.doc').style.width = "";
         };
+        
+        document.addEventListener('wheel', function() {
+            event.preventDefault();
+        }
         
         //publify.startEdit();
     });
