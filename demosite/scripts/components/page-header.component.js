@@ -14,17 +14,24 @@
     }).Class({
         constructor: function() {},
         ngOnInit: function() {
-            // app.root will, if not already cached, fetch the root element from the server.
-            // root.children will fetch all children of the element from the server, if not already cached.
-            app.root(root => root.children(children => 
-                console.log(children)
-            ));
+            // it will fetch all children of the element from the server, if not already cached.
+            // Then call the callback functions que.
             
-            app.$root(function(root) {
-                root.$children(function(children) {
-                    console.log(children);
+            var headeritems = [];
+            (function populateHeaderItem(item, arr) {
+                item.getChildren(function(children) {
+                    children.forEach(function(child) {
+                        var item = {
+                            title: child.menuTitle || child.title || child.name,
+                            children: []
+                        };
+                        if(child.children.length > 0) {
+                            populateHeaderItem(child, item.children);
+                        }
+                        arr.push(item);
+                    });
                 });
-            });
+            })($root, headeritems);
         }
     });
 })(window.app || (window.app = {}));
